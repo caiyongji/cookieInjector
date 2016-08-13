@@ -1,0 +1,27 @@
+{
+"manifest_version": 2,
+
+"name": "Cookie Injector",
+"description": "Cookie Injector: A cookie hacker tools --- inject cookies and export/import cookies as files",
+"version": "1.0.11",
+"homepage_url": "https://blog.caiyongji.com",
+"icons" : {
+    "128" : "/icon.png" ,
+    "16" : "/icon.png" ,
+    "48" : "/icon.png"
+  } ,
+"browser_action": {
+"default_icon": "icon.png",
+"default_popup": "popup.html",
+"default_title": "Cookie Injector"
+},
+"permissions": [
+"tabs",
+"cookies",
+"storage",
+"webRequest",
+"webRequestBlocking",
+"http://*/*",
+"https://*/*"
+]
+}
