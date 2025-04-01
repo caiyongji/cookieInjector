@@ -1,26 +1,37 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8">
     <title>Cookie Injector</title>
-    <script type='text/javascript' src="jquery-1.6.2.min.js"></script>
-    <script type='text/javascript' src="popup.js"></script>
-    <link rel="stylesheet" type="text/css" href="popup.css">
+    <script src="popup.js" defer></script>
+    <link rel="stylesheet" href="popup.css">
   </head>
   <body>
-  <div style="white-space: nowrap;">
-  Injector: <input type="text" id="cookieInput" class="i1" placeholder ='type [NAME VALUE] ; press [enter] to inject'/>
-  Domian: <select id="domainCookieSelector"></select>
-  <input type="text" id="domainCookieInput" class="i3" style="display:none"/>
-  Path: <select id="pathCookieSelector"><option>/</option></select>
-  <input type="text" id="pathCookieInput" class="i2" style="display:none"/>
-  <font color="#A9B1C6">(double click to custom)</font>
-  <br>
-  Filter: <input type="text" id="filterInput" class="i1" placeholder="Filter: press [space] to split; press [enter] to clear"/>
-  Domian: <select id="domainFilterSelector"><option>-</option></select>
-  Path: <select id="pathFilterSelector"><option>/</option></select>
-  </div>
-  <br>
-  <ol id="showOl" style="overflow-wrap: break-word;"></ol>
+    <div style="white-space: nowrap;">
+      <label for="cookieInput">Injector:</label>
+      <input type="text" id="cookieInput" class="i1" placeholder="type [NAME VALUE] ; press [enter] to inject">
+      
+      <label for="domainCookieSelector">Domain:</label>
+      <select id="domainCookieSelector"></select>
+      <input type="text" id="domainCookieInput" class="i3" style="display:none">
+      
+      <label for="pathCookieSelector">Path:</label>
+      <select id="pathCookieSelector"><option>/</option></select>
+      <input type="text" id="pathCookieInput" class="i2" style="display:none">
+      <span style="color: #A9B1C6">(double click to custom)</span>
+      <br>
+      
+      <label for="filterInput">Filter:</label>
+      <input type="text" id="filterInput" class="i1" placeholder="Filter: press [space] to split; press [enter] to clear">
+      
+      <label for="domainFilterSelector">Domain:</label>
+      <select id="domainFilterSelector"><option>-</option></select>
+      
+      <label for="pathFilterSelector">Path:</label>
+      <select id="pathFilterSelector"><option>/</option></select>
+    </div>
+    <br>
+    <ol id="showOl" style="overflow-wrap: break-word;"></ol>
   </body>
 </html>
 

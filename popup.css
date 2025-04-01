@@ -1,3 +1,54 @@
-.i1{margin: 5px 0px 5px 0px;width:300px}
-.i2{width:40px}
-.i3{width:160px}
+/* Input field styles */
+.i1 {
+    margin: 5px 0;
+    width: 300px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.i2 {
+    width: 40px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.i3 {
+    width: 160px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Select styles */
+select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin: 5px 0;
+}
+
+/* List styles */
+#showOl {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+#showOl li {
+    margin: 5px 0;
+    padding: 5px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Label styles */
+label {
+    display: inline-block;
+    margin: 5px 0;
+    font-weight: 500;
+}
+
+/* Container styles */
+div {
+    margin: 10px 0;
+}

@@ -1,5 +1,5 @@
 {
-"manifest_version": 2,
+"manifest_version": 3,
 
 "name": "Cookie Injector",
 "description": "Cookie Injector: A cookie hacker tools --- inject cookies and export/import cookies as files",
@@ -10,18 +10,25 @@
     "16" : "/icon.png" ,
     "48" : "/icon.png"
   } ,
-"browser_action": {
+"action": {
 "default_icon": "icon.png",
 "default_popup": "popup.html",
 "default_title": "Cookie Injector"
 },
+"background": {
+  "service_worker": "background.js",
+  "type": "module"
+},
 "permissions": [
 "tabs",
 "cookies",
-"storage",
-"webRequest",
-"webRequestBlocking",
+"storage"
+],
+"host_permissions": [
 "http://*/*",
 "https://*/*"
-]
+],
+"content_security_policy": {
+"extension_pages": "script-src 'self'; object-src 'self'"
+}
 }

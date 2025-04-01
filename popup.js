@@ -1,133 +1,196 @@
-var host;
-var btnId;
-var currentUrl;
-var domainArray;
-$(function(){
-	chrome.windows.getCurrent(function(w) {
-			    wid = w.id;
-			    chrome.tabs.getSelected(wid, function(t) {
-			            host=getDomainFromUrl(t.url);
-			            currentUrl=t.url;
-			            listCurrentCookies();
-			    });
-	});
-	$("#filterInput").keyup(function(event){
-		if(event.keyCode==8){//backspace
-			showAllList();
-		}else if(event.keyCode==13){//enter
-			showAllList();
-			return;
-		}
-		multiFilter($("#filterInput").val());
-	});
-	
-	$("#cookieInput").keypress(function(event){
-		if ( event.which == 13 ) {
-			var cookieArray=$("#cookieInput").val().split(";");
-			$(cookieArray).each(function(i,cookie){
-				var c=cookie.split(",");
-				chrome.cookies.set({"url":currentUrl,"name":c[0],"value":c[1],"domain":c[2],"path":c[3]});
-			});
-			$("#cookieInput").val("");
-  		}
-	});
-	
-	$("#domainFilterSelector,#pathFilterSelector").change(function(){
-		showAllList();
-		var domainF=$("#domainFilterSelector").find("option:selected").text();
-		var pathF=$("#pathFilterSelector").find("option:selected").text();
-		var keywords=(domainF=="-"?"":("|"+domainF+"|"))+" "+(pathF=="-"?"":("|"+pathF));
-		multiFilter(keywords);
-	});
-	$("#pathCookieSelector").dblclick(function(){
-		$("#pathCookieSelector").hide();
-		$("#pathCookieInput").show();
-		
-	});
-	$("#pathCookieInput").dblclick(function(){
-		$("#pathCookieSelector").show();
-		$("#pathCookieInput").hide();
-		
-	});
-	$("#domainCookieSelector").dblclick(function(){
-		$("#domainCookieSelector").hide();
-		$("#domainCookieInput").show();
-		
-	});
-	$("#domainCookieInput").dblclick(function(){
-		$("#domainCookieSelector").show();
-		$("#domainCookieInput").hide();
-		
-	});
-	$("#cookieInput").focus();
-});//初始化结束
+// Global variables
+let host;
+let currentUrl;
+let domainArray;
 
-//Array添加方法
-Array.prototype.removeDuplication = function(){
-	for (var i = 0; i < this.length; i++) {
-		for (var j = i + 1; j < this.length; j++) {
-			if (this[j]=="/"||this[i] == this[j]) {
-				this.splice(j,1);
-				i=-1;
+// DOM Elements
+const elements = {
+	cookieInput: document.getElementById('cookieInput'),
+	filterInput: document.getElementById('filterInput'),
+	domainCookieSelector: document.getElementById('domainCookieSelector'),
+	pathCookieSelector: document.getElementById('pathCookieSelector'),
+	domainCookieInput: document.getElementById('domainCookieInput'),
+	pathCookieInput: document.getElementById('pathCookieInput'),
+	domainFilterSelector: document.getElementById('domainFilterSelector'),
+	pathFilterSelector: document.getElementById('pathFilterSelector'),
+	showOl: document.getElementById('showOl')
+};
+
+// Initialize the extension
+document.addEventListener('DOMContentLoaded', async () => {
+	try {
+		const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+		host = getDomainFromUrl(tab.url);
+		currentUrl = tab.url;
+		await listCurrentCookies();
+		elements.cookieInput.focus();
+	} catch (error) {
+		console.error('Error initializing:', error);
+	}
+});
+
+// Event Listeners
+elements.filterInput.addEventListener('keyup', (event) => {
+	if (event.key === 'Backspace') {
+		showAllList();
+	} else if (event.key === 'Enter') {
+		showAllList();
+		return;
+	}
+	multiFilter(elements.filterInput.value);
+});
+
+elements.cookieInput.addEventListener('keypress', async (event) => {
+	if (event.key === 'Enter') {
+		try {
+			const cookieArray = elements.cookieInput.value.split(';');
+			for (const cookie of cookieArray) {
+				const [name, value, domain, path] = cookie.split(',');
+				await chrome.cookies.set({
+					url: currentUrl,
+					name,
+					value,
+					domain,
+					path
+				});
+			}
+			elements.cookieInput.value = '';
+			await listCurrentCookies();
+		} catch (error) {
+			console.error('Error injecting cookies:', error);
+			alert('Failed to inject cookies. Please check the format and try again.');
+		}
+	}
+});
+
+elements.domainFilterSelector.addEventListener('change', () => {
+	showAllList();
+	const domainF = elements.domainFilterSelector.value;
+	const pathF = elements.pathFilterSelector.value;
+	const keywords = `${domainF === '-' ? '' : `|${domainF}|`} ${pathF === '-' ? '' : `|${pathF}`}`;
+	multiFilter(keywords);
+});
+
+elements.pathFilterSelector.addEventListener('change', () => {
+	showAllList();
+	const domainF = elements.domainFilterSelector.value;
+	const pathF = elements.pathFilterSelector.value;
+	const keywords = `${domainF === '-' ? '' : `|${domainF}|`} ${pathF === '-' ? '' : `|${pathF}`}`;
+	multiFilter(keywords);
+});
+
+// Double click handlers for custom inputs
+elements.pathCookieSelector.addEventListener('dblclick', () => {
+	elements.pathCookieSelector.style.display = 'none';
+	elements.pathCookieInput.style.display = 'block';
+});
+
+elements.pathCookieInput.addEventListener('dblclick', () => {
+	elements.pathCookieSelector.style.display = 'block';
+	elements.pathCookieInput.style.display = 'none';
+});
+
+elements.domainCookieSelector.addEventListener('dblclick', () => {
+	elements.domainCookieSelector.style.display = 'none';
+	elements.domainCookieInput.style.display = 'block';
+});
+
+elements.domainCookieInput.addEventListener('dblclick', () => {
+	elements.domainCookieSelector.style.display = 'block';
+	elements.domainCookieInput.style.display = 'none';
+});
+
+// Utility Functions
+function getDomainFromUrl(url) {
+	if (!url) return 'null';
+	const regex = /.*:\/\/([^/]*).*/;
+	const match = url.match(regex);
+	return match ? match[1] : 'null';
+}
+
+function addlistShow(val) {
+	const li = document.createElement('li');
+	const span = document.createElement('span');
+	span.textContent = val;
+	li.appendChild(span);
+	elements.showOl.appendChild(li);
+}
+
+function clearList() {
+	elements.showOl.innerHTML = '';
+}
+
+function showAllList() {
+	const items = elements.showOl.getElementsByTagName('li');
+	Array.from(items).forEach(item => item.style.display = '');
+}
+
+function multiFilter(keywords) {
+	const items = elements.showOl.getElementsByTagName('li');
+	const keywordArray = keywords.split(' ');
+	
+	Array.from(items).forEach(item => {
+		const span = item.querySelector('span');
+		for (const keyword of keywordArray) {
+			const escapedKeyword = keyword.replace(/\|/gi, '\\|');
+			if (!new RegExp(escapedKeyword, 'i').test(span.textContent)) {
+				item.style.display = 'none';
+				break;
+			}
+		}
+	});
+}
+
+// Array prototype extension
+Array.prototype.removeDuplication = function() {
+	for (let i = 0; i < this.length; i++) {
+		for (let j = i + 1; j < this.length; j++) {
+			if (this[j] === '/' || this[i] === this[j]) {
+				this.splice(j, 1);
+				i = -1;
 				break;
 			}
 		}
 	}
-}
-function getDomainFromUrl(url){
-     var host = "null";
-     if(typeof url == "undefined" || null == url)
-          url = window.location.href;
-     var regex = /.*\:\/\/([^\/]*).*/;
-     var match = url.match(regex);
-     if(typeof match != "undefined" && null != match)
-          host = match[1];
-     return host;
-}
-function addlistShow(val){
-	$("#showOl").append("<li><span>"+val+"</span></li>");
-}
-function clearList(){
-	$("#showOl").empty();
-}
-function showAllList(){
-	$("#showOl>li").each(function(i,li){
-		$(li).show();
-	});
-}
+};
 
-function multiFilter(keywords){
-	keywords=keywords.split(" ");
-	$("#showOl>li>span").each(function(i,span){
-				for(var i=0;i<keywords.length;i++){
-					var keyword=keywords[i].replace(/\|/gi,'\\|');
-					if(!new RegExp(keyword, 'i').test($(span).text())){
-						$(span).parent().hide();
-						break;
-					}
-				}
-			});
-}
-function listCurrentCookies(){
-	$("#filterInput").focus();
+// Main cookie listing function
+async function listCurrentCookies() {
+	elements.filterInput.focus();
 	clearList();
-	chrome.cookies.getAll({"url":currentUrl},function(cookies){
-		var domainArray=new Array();
-		var pathArray=new Array();
-		$(cookies).each(function(i,cookie){
+	
+	try {
+		const cookies = await chrome.cookies.getAll({ url: currentUrl });
+		const domainArray = [];
+		const pathArray = [];
+		
+		for (const cookie of cookies) {
 			domainArray.push(cookie.domain);
 			pathArray.push(cookie.path);
-			addlistShow(cookie.name+"<font color='red'>|</font>"+cookie.value+"<font color='red'>|</font>"+cookie.domain+"<font color='red'>|</font>"+cookie.path);
-		});
+			addlistShow(`${cookie.name}|${cookie.value}|${cookie.domain}|${cookie.path}`);
+		}
+		
 		domainArray.removeDuplication();
 		pathArray.removeDuplication();
-		for(var i=0;i<domainArray.length;i++){
-			$('#domainFilterSelector').append("<option>"+domainArray[i]+"</option>");
-			$('#domainCookieSelector').append("<option>"+domainArray[i]+"</option>");
+		
+		// Clear existing options
+		elements.domainFilterSelector.innerHTML = '<option>-</option>';
+		elements.domainCookieSelector.innerHTML = '';
+		elements.pathFilterSelector.innerHTML = '<option>/</option>';
+		elements.pathCookieSelector.innerHTML = '<option>/</option>';
+		
+		// Add new options
+		for (const domain of domainArray) {
+			elements.domainFilterSelector.add(new Option(domain));
+			elements.domainCookieSelector.add(new Option(domain));
 		}
-		for(var i=0;i<pathArray.length;i++){
-			$('#pathFilterSelector').append("<option>"+pathArray[i]+"</option>");
-			$('#pathCookieSelector').append("<option>"+pathArray[i]+"</option>");
+		
+		for (const path of pathArray) {
+			elements.pathFilterSelector.add(new Option(path));
+			elements.pathCookieSelector.add(new Option(path));
 		}
-	});
+	} catch (error) {
+		console.error('Error listing cookies:', error);
+		alert('Failed to list cookies. Please try again.');
+	}
 }
